@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scan QR Token</title>
+</head>
+<body>
+
+<h2>Valider un token QR</h2>
+<input type="text" id="qr_token" placeholder="Entrez token QR"/>
+<button onclick="envoyerToken()">Valider</button>
+
+<div id="resultat"></div>
+
+<script>
+async function envoyerToken() {
+    const token = document.getElementById('qr_token').value;
+    if (!token) {
+        alert("Entrez un token");
+        return;
+    }
+    const response = await fetch('http://localhost:5000/scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({qr_token: token})
+    });
+
+    const data = await response.json();
+    let affichage = '';
+    if (response.ok) {
+        affichage = `<p>Utilisateur: ${data.user.prenom} ${data.user.nom}</p>
+                    <p>Niveau: ${data.user.niveau}</p>
+                    <p>Accès labo DIP: ${data.user.acces_labo_DIP}</p>
+                    <p>Accès docs: ${data.user.acces_docs}</p>`;
+    } else {
+        affichage = `<p>Erreur: ${data.status || data.error}</p>`;
+    }
+    document.getElementById('resultat').innerHTML = affichage;
+}
+</script>
+
+</body>
+</html>
