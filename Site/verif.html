@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner QR Token - Ultron Survivors</title>
+    <link rel="stylesheet" href="Css/verif.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+    <div class="particles"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">⚡</div>
+                ULTRON SURVIVORS
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html#accueil" class="nav-link">Accueil</a></li>
+                <li><a href="index.html#situation" class="nav-link">Situation</a></li>
+                <li><a href="index.html#resistance" class="nav-link">Résistance</a></li>
+                <li><a href="verif.html" class="nav-link scanner-link">Scanner QR</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="scanner-section">
+            <div class="container">
+                <div class="scanner-header">
+                    <div class="scanner-logo">
+                        <div class="logo-circle">
+                            <svg viewBox="0 0 24 24" class="logo-icon">
+                                <path d="M3,11H5V13H3V11M11,5H13V9H11V5M9,11H13V15H9V11M15,11H17V13H15V11M19,11H21V13H19V11M5,19H7V21H5V19M3,5H9V9H3V5M5,7V7H7V7H5M15,5H21V9H15V5M17,7V7H19V7H17M3,15H9V21H3V15M5,17V17H7V17H5M15,15H17V17H15V15M15,19H17V21H15V19M19,15H21V17H19V15M19,19H21V21H19V19Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="scanner-content">
+                        <h1 class="scanner-title">SCANNER QR TOKEN</h1>
+                        <p class="scanner-subtitle">Authentification sécurisée - Système de survie activé</p>
+                        <div class="scanner-description">
+                            <p>Validez votre token d'accès pour accéder aux zones sécurisées de la résistance.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="scanner-interface">
+                    <div class="scanner-tabs">
+                        <button class="tab active" onclick="switchTab('camera')">
+                            <span class="tab-icon">📹</span>
+                            Scanner Caméra
+                        </button>
+                        <button class="tab" onclick="switchTab('manual')">
+                            <span class="tab-icon">⌨️</span>
+                            Saisie Manuelle
+                        </button>
+                    </div>
+
+                    <div id="camera-section" class="tab-content active">
+                        <div class="camera-container">
+                            <video id="video" autoplay playsinline></video>
+                            <canvas id="canvas"></canvas>
+                            <div class="scanner-overlay">
+                                <div class="scan-frame"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="scanner-controls">
+                            <button id="startBtn" class="control-btn primary" onclick="startScanner()">
+                                <span class="btn-icon">▶️</span>
+                                Démarrer Scanner
+                            </button>
+                            <button id="stopBtn" class="control-btn secondary" onclick="stopScanner()" disabled>
+                                <span class="btn-icon">⏹️</span>
+                                Arrêter Scanner
+                            </button>
+                        </div>
+                        
+                        <div id="scanner-status" class="status-display" style="display: none;"></div>
+                    </div>
+
+                    <div id="manual-section" class="tab-content">
+                        <div class="input-section">
+                            <div class="input-container">
+                                <input 
+                                    type="text" 
+                                    id="qr_token" 
+                                    placeholder="Entrez votre token QR sécurisé"
+                                    autocomplete="off"
+                                />
+                                <div class="input-glow"></div>
+                            </div>
+                            
+                            <button class="validate-btn" onclick="envoyerToken()">
+                                <div class="spinner" id="spinner"></div>
+                                <span id="btn-text">Valider le Token</span>
+                                <div class="btn-shimmer"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="resultat" class="result-container"></div>
+
+                <div class="back-navigation">
+                    <a href="index.html" class="back-btn">
+                        <span class="back-icon">←</span>
+                        Retour au Centre de Contrôle
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="Script/verif.js"></script>
+</body>
+</html>

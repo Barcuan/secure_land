@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Ultron Survivors</title>
+    <link rel="stylesheet" href="Css/admin.css">
+</head>
+<body>
+    <div class="particles"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">⚡</div>
+                ULTRON SURVIVORS - ADMIN
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Accueil</a></li>
+                <li><a href="verif.html" class="nav-link">Scanner QR</a></li>
+                <li><a href="#" class="nav-link admin-link">Administration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="admin-section">
+            <div class="container">
+                <div class="admin-header">
+                    <div class="admin-logo">
+                        <div class="logo-circle">
+                            <svg viewBox="0 0 24 24" class="logo-icon">
+                                <path d="M12,15C12.81,15 13.5,14.7 14.11,14.11C14.7,13.5 15,12.81 15,12C15,11.19 14.7,10.5 14.11,9.89C13.5,9.3 12.81,9 12,9C11.19,9 10.5,9.3 9.89,9.89C9.3,10.5 9,11.19 9,12C9,12.81 9.3,13.5 9.89,14.11C10.5,14.7 11.19,15 12,15M12,2C14.21,2 16.21,2.81 17.78,4.39C19.36,5.96 20.17,7.96 20.17,10.17C20.17,12.5 19.36,14.24 17.78,15.81L12,21.58L6.22,15.81C4.64,14.24 3.83,12.5 3.83,10.17C3.83,7.96 4.64,5.96 6.22,4.39C7.79,2.81 9.79,2 12,2Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-content">
+                        <h1 class="admin-title">PANNEAU D'ADMINISTRATION</h1>
+                        <p class="admin-subtitle">Gestion des survivants - Accès restreint</p>
+                        <div class="admin-description">
+                            <p>Ajoutez de nouveaux survivants au réseau de résistance avec leurs accréditations.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="admin-interface">
+                    <div class="admin-tabs">
+                        <button class="tab active" onclick="switchTab('add')">
+                            <span class="tab-icon">👤</span>
+                            Ajouter Survivant
+                        </button>
+                        <button class="tab" onclick="switchTab('list')">
+                            <span class="tab-icon">📋</span>
+                            Liste des Survivants
+                        </button>
+                    </div>
+
+                    <div id="add-section" class="tab-content active">
+                        <form id="addUserForm" class="user-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="nom">Nom de famille</label>
+                                    <input type="text" id="nom" name="nom" required>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="prenom">Prénom</label>
+                                    <input type="text" id="prenom" name="prenom" required>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="date_naissance">Date de naissance</label>
+                                    <input type="date" id="date_naissance" name="date_naissance" required>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="localisation">Localisation</label>
+                                    <input type="text" id="localisation" name="localisation" placeholder="ex: Paris, France" required>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="niveau">Niveau d'accréditation</label>
+                                    <select id="niveau" name="niveau" required>
+                                        <option value="">Sélectionner un niveau</option>
+                                        <option value="public">Public</option>
+                                        <option value="restreint">Restreint</option>
+                                        <option value="confidentiel">Confidentiel</option>
+                                        <option value="secret">Secret</option>
+                                        <option value="ultra-secret">Ultra-Secret</option>
+                                    </select>
+                                    <div class="input-glow"></div>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <div class="checkbox-group">
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="acces_labo_DIP" name="acces_labo_DIP">
+                                            <label for="acces_labo_DIP">
+                                                <span class="checkbox-custom"></span>
+                                                Accès au Laboratoire DIP
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="acces_docs" name="acces_docs">
+                                            <label for="acces_docs">
+                                                <span class="checkbox-custom"></span>
+                                                Accès aux Documents Classifiés
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="submit-btn">
+                                    <div class="spinner" id="spinner"></div>
+                                    <span id="btn-text">🔐 Ajouter au Réseau</span>
+                                    <div class="btn-shimmer"></div>
+                                </button>
+                                
+                                <button type="button" class="reset-btn" onclick="resetForm()">
+                                    <span>🗑️ Réinitialiser</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div id="list-section" class="tab-content">
+                        <div class="list-controls">
+                            <button class="refresh-btn" onclick="loadUserList()">
+                                <span class="btn-icon">🔄</span>
+                                Actualiser
+                            </button>
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="Rechercher un survivant...">
+                                <div class="search-icon">🔍</div>
+                            </div>
+                        </div>
+                        
+                        <div id="userList" class="user-list">
+                            <div class="loading-message">
+                                <div class="loading-spinner"></div>
+                                <p>Chargement des données...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="message-container" class="message-container"></div>
+
+                <div class="back-navigation">
+                    <a href="index.html" class="back-btn">
+                        <span class="back-icon">←</span>
+                        Retour au Centre de Contrôle
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="Script/admin.js"></script>
+</body>
+</html>
