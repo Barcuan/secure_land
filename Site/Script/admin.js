@@ -1,8 +1,24 @@
 // Variables globales
 let currentUsers = [];
 
-// Initialisation au chargement de la page
+// Variables pour la gestion de session
+let sessionCheckInterval;
+let inactivityTimer;
+let lastActivity = Date.now();
+const INACTIVITY_TIMEOUT = 3 * 60 * 1000; // 3 minutes en millisecondes
+const SESSION_CHECK_INTERVAL = 10 * 1000; // Vérifier toutes les 10 secondes
+
+// Vérification d'authentification au chargement
 document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier l'authentification AVANT d'initialiser
+    if (!checkAdminAuth()) {
+        return; // Arrêter l'initialisation si pas authentifié
+    }
+    
+    // Initialiser le suivi d'activité
+    initializeActivityTracking();
+    
+    // Continuer l'initialisation normale seulement si authentifié
     initializeParticles();
     setupEventListeners();
     initializeTabs();
@@ -12,6 +28,468 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.container').style.transform = 'translateY(0) scale(1)';
     }, 100);
 });
+
+// Initialiser le suivi d'activité utilisateur
+function initializeActivityTracking() {
+    console.log('🕐 Initialisation du suivi d\'activité (3 min max)');
+    
+    // Événements qui comptent comme activité
+    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    
+    // Fonction pour réinitialiser le timer d'inactivité
+    function resetInactivityTimer() {
+        lastActivity = Date.now();
+        
+        // Effacer le timer précédent
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+        }
+        
+        // Créer un nouveau timer
+        inactivityTimer = setTimeout(() => {
+            console.log('⏰ Déconnexion automatique - Inactivité détectée');
+            forceLogout('Session expirée par inactivité (3 minutes)');
+        }, INACTIVITY_TIMEOUT);
+    }
+    
+    // Écouter les événements d'activité
+    activityEvents.forEach(event => {
+        document.addEventListener(event, resetInactivityTimer, true);
+    });
+    
+    // Démarrer le timer initial
+    resetInactivityTimer();
+    
+    // Vérification périodique de la session
+    sessionCheckInterval = setInterval(checkSessionValidity, SESSION_CHECK_INTERVAL);
+}
+
+// Fonction de vérification d'authentification améliorée
+function checkAdminAuth() {
+    const adminSession = sessionStorage.getItem('ultron_admin_session');
+    
+    if (!adminSession) {
+        redirectToLogin('Authentification requise');
+        return false;
+    }
+    
+    try {
+        const session = JSON.parse(adminSession);
+        
+        // Vérifier l'expiration
+        if (Date.now() >= session.expires) {
+            sessionStorage.removeItem('ultron_admin_session');
+            redirectToLogin('Session expirée');
+            return false;
+        }
+        
+        // Vérifier le niveau d'accréditation
+        if (session.niveau !== 'ultra-secret') {
+            sessionStorage.removeItem('ultron_admin_session');
+            redirectToLogin('Privilèges insuffisants');
+            return false;
+        }
+        
+        // Afficher info utilisateur connecté
+        displayCurrentUser(session.user);
+        return true;
+        
+    } catch (e) {
+        // Session corrompue
+        sessionStorage.removeItem('ultron_admin_session');
+        redirectToLogin('Session invalide');
+        return false;
+    }
+}
+
+// Vérification périodique de la validité de la session
+function checkSessionValidity() {
+    const adminSession = sessionStorage.getItem('ultron_admin_session');
+    
+    if (!adminSession) {
+        forceLogout('Session supprimée');
+        return;
+    }
+    
+    try {
+        const session = JSON.parse(adminSession);
+        
+        // Vérifier l'expiration
+        if (Date.now() >= session.expires) {
+            forceLogout('Session expirée');
+            return;
+        }
+        
+        // Mettre à jour l'affichage du temps restant
+        updateSessionDisplay(session);
+        
+    } catch (e) {
+        forceLogout('Session corrompue');
+    }
+}
+
+// Mettre à jour l'affichage du temps de session
+function updateSessionDisplay(session) {
+    const timeLeft = session.expires - Date.now();
+    const minutesLeft = Math.floor(timeLeft / (1000 * 60));
+    
+    // Chercher l'élément d'info utilisateur
+    const userInfo = document.querySelector('.current-user-info');
+    if (userInfo) {
+        let timeDisplay = userInfo.querySelector('.session-time');
+        
+        if (!timeDisplay) {
+            timeDisplay = document.createElement('span');
+            timeDisplay.className = 'session-time';
+            timeDisplay.style.cssText = `
+                margin-left: 15px;
+                color: #ffa502;
+                font-size: 0.9rem;
+                font-weight: 600;
+            `;
+            userInfo.querySelector('div').appendChild(timeDisplay);
+        }
+        
+        // Changer la couleur selon le temps restant
+        if (minutesLeft <= 5) {
+            timeDisplay.style.color = '#ff4757';
+            timeDisplay.style.animation = 'sessionWarning 1s infinite alternate';
+        } else if (minutesLeft <= 10) {
+            timeDisplay.style.color = '#ffa502';
+        } else {
+            timeDisplay.style.color = '#2ed573';
+        }
+        
+        timeDisplay.textContent = `⏱️ ${minutesLeft}min`;
+    }
+}
+
+// Redirection vers la page de connexion améliorée
+function redirectToLogin(message) {
+    console.log(`🔒 Accès admin refusé: ${message}`);
+    
+    // Nettoyer les timers
+    if (sessionCheckInterval) {
+        clearInterval(sessionCheckInterval);
+    }
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    
+    // Afficher message d'erreur avec animation de redirection
+    document.body.innerHTML = `
+        <div style="
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            padding: 20px;
+        ">
+            <div style="
+                background: rgba(255, 71, 87, 0.1);
+                border: 2px solid #ff4757;
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 500px;
+                backdrop-filter: blur(20px);
+                animation: sessionExpiredPulse 2s infinite;
+            ">
+                <h1 style="font-size: 2rem; margin-bottom: 20px; color: #ff4757;">🔒 SESSION TERMINÉE</h1>
+                <p style="font-size: 1.2rem; margin-bottom: 20px;">${message}</p>
+                <p style="margin-bottom: 30px; color: #a0a3bd;">
+                    Redirection automatique vers la page de connexion...
+                </p>
+                <div style="
+                    width: 100%;
+                    height: 4px;
+                    background: rgba(255, 71, 87, 0.2);
+                    border-radius: 2px;
+                    overflow: hidden;
+                    margin-bottom: 20px;
+                ">
+                    <div style="
+                        width: 0%;
+                        height: 100%;
+                        background: linear-gradient(90deg, #ff4757, #ffa502);
+                        border-radius: 2px;
+                        animation: redirectProgress 3s linear forwards;
+                    "></div>
+                </div>
+                <a href="login.html" style="
+                    display: inline-block;
+                    padding: 15px 30px;
+                    background: linear-gradient(135deg, #9c27b0, #e91e63);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 50px;
+                    font-weight: 700;
+                    transition: transform 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🔐 Se reconnecter
+                </a>
+            </div>
+        </div>
+        
+        <style>
+            @keyframes sessionExpiredPulse {
+                0%, 100% { 
+                    box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+                    transform: scale(1);
+                }
+                50% { 
+                    box-shadow: 0 0 40px rgba(255, 71, 87, 0.6);
+                    transform: scale(1.02);
+                }
+            }
+            
+            @keyframes redirectProgress {
+                0% { width: 0%; }
+                100% { width: 100%; }
+            }
+            
+            @keyframes sessionWarning {
+                0% { opacity: 1; }
+                100% { opacity: 0.5; }
+            }
+        </style>
+    `;
+    
+    // Redirection automatique après 3 secondes
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 3000);
+}
+
+// Déconnexion forcée (inactivité ou session expirée)
+function forceLogout(reason) {
+    console.log(`🚪 Déconnexion forcée: ${reason}`);
+    
+    // Nettoyer la session
+    sessionStorage.removeItem('ultron_admin_session');
+    
+    // Nettoyer les timers
+    if (sessionCheckInterval) {
+        clearInterval(sessionCheckInterval);
+    }
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    
+    // Rediriger avec le message
+    redirectToLogin(reason);
+}
+
+// Afficher l'utilisateur connecté (version améliorée)
+function displayCurrentUser(user) {
+    // Ajouter info utilisateur dans le header
+    const adminContent = document.querySelector('.admin-content');
+    if (adminContent && !document.querySelector('.current-user-info')) {
+        const userInfo = document.createElement('div');
+        userInfo.className = 'current-user-info';
+        userInfo.innerHTML = `
+            <div style="
+                margin-top: 15px;
+                padding: 15px 25px;
+                background: rgba(156, 39, 176, 0.1);
+                border: 1px solid rgba(156, 39, 176, 0.3);
+                border-radius: 25px;
+                display: inline-flex;
+                align-items: center;
+                gap: 15px;
+                flex-wrap: wrap;
+            ">
+                <span style="color: #e91e63; font-weight: 700;">👤 ${user.prenom} ${user.nom}</span>
+                <span style="color: #9c27b0; font-weight: 600;">🔐 ${user.niveau.toUpperCase()}</span>
+                <button onclick="logoutAdmin()" style="
+                    background: rgba(255, 71, 87, 0.2);
+                    border: 1px solid #ff4757;
+                    border-radius: 15px;
+                    color: #ff4757;
+                    padding: 8px 15px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    transition: all 0.3s ease;
+                " title="Se déconnecter" onmouseover="this.style.background='rgba(255, 71, 87, 0.3)'" onmouseout="this.style.background='rgba(255, 71, 87, 0.2)'">
+                    🚪 Déconnexion
+                </button>
+            </div>
+        `;
+        adminContent.appendChild(userInfo);
+    }
+}
+
+// Fonction de déconnexion manuelle améliorée
+function logoutAdmin() {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        console.log('🚪 Déconnexion manuelle demandée');
+        
+        // Nettoyer la session
+        sessionStorage.removeItem('ultron_admin_session');
+        
+        // Nettoyer les timers
+        if (sessionCheckInterval) {
+            clearInterval(sessionCheckInterval);
+        }
+        if (inactivityTimer) {
+            clearTimeout(inactivityTimer);
+        }
+        
+        // Message de confirmation avec redirection
+        showSuccessMessage('Déconnexion réussie - Redirection...');
+        
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+    }
+}
+
+// Fonction pour gérer la fermeture/rechargement de l'onglet
+window.addEventListener('beforeunload', function(e) {
+    // Nettoyer les timers
+    if (sessionCheckInterval) {
+        clearInterval(sessionCheckInterval);
+    }
+    if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+    }
+    
+    // Note: sessionStorage se vide automatiquement à la fermeture de l'onglet
+    // Pas besoin de le faire manuellement
+});
+
+// Gérer la visibilité de la page (onglet inactif)
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+        console.log('📵 Onglet masqué - Pause des vérifications');
+        // Optionnel: on peut pausern les vérifications quand l'onglet n'est pas visible
+    } else {
+        console.log('👁️ Onglet visible - Reprise des vérifications');
+        // Vérifier immédiatement la session au retour
+        if (!checkAdminAuth()) {
+            return;
+        }
+    }
+});
+
+// Redirection vers la page de connexion
+function redirectToLogin(message) {
+    console.log(`🔒 Accès admin refusé: ${message}`);
+    
+    // Afficher message d'erreur temporaire
+    document.body.innerHTML = `
+        <div style="
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            padding: 20px;
+        ">
+            <div style="
+                background: rgba(255, 71, 87, 0.1);
+                border: 2px solid #ff4757;
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 500px;
+                backdrop-filter: blur(20px);
+            ">
+                <h1 style="font-size: 2rem; margin-bottom: 20px; color: #ff4757;">🔒 ACCÈS REFUSÉ</h1>
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">${message}</p>
+                <p style="margin-bottom: 30px; color: #a0a3bd;">
+                    Seuls les agents avec accréditation <strong style="color: #e91e63;">ULTRA-SECRET</strong> 
+                    peuvent accéder au panneau d'administration.
+                </p>
+                <a href="login.html" style="
+                    display: inline-block;
+                    padding: 15px 30px;
+                    background: linear-gradient(135deg, #9c27b0, #e91e63);
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 50px;
+                    font-weight: 700;
+                    transition: transform 0.3s ease;
+                " onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🔐 S'authentifier
+                </a>
+            </div>
+        </div>
+    `;
+    
+    // Redirection automatique après 3 secondes
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 3000);
+}
+
+// Afficher l'utilisateur connecté
+function displayCurrentUser(user) {
+    // Ajouter info utilisateur dans le header
+    const adminContent = document.querySelector('.admin-content');
+    if (adminContent && !document.querySelector('.current-user-info')) {
+        const userInfo = document.createElement('div');
+        userInfo.className = 'current-user-info';
+        userInfo.innerHTML = `
+            <div style="
+                margin-top: 15px;
+                padding: 10px 20px;
+                background: rgba(156, 39, 176, 0.1);
+                border: 1px solid rgba(156, 39, 176, 0.3);
+                border-radius: 25px;
+                display: inline-block;
+            ">
+                <span style="color: #e91e63; font-weight: 700;">👤 ${user.prenom} ${user.nom}</span>
+                <span style="margin-left: 15px; color: #9c27b0; font-weight: 600;">🔐 ${user.niveau.toUpperCase()}</span>
+                <button onclick="logoutAdmin()" style="
+                    margin-left: 15px;
+                    background: rgba(255, 71, 87, 0.2);
+                    border: 1px solid #ff4757;
+                    border-radius: 15px;
+                    color: #ff4757;
+                    padding: 5px 12px;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                " title="Se déconnecter">🚪 Déconnexion</button>
+            </div>
+        `;
+        adminContent.appendChild(userInfo);
+    }
+}
+
+// Fonction de déconnexion
+function logoutAdmin() {
+    if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        sessionStorage.removeItem('ultron_admin_session');
+        showSuccessMessage('Déconnexion réussie');
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1000);
+    }
+}
+
+// Vérification périodique de la session
+setInterval(() => {
+    const adminSession = sessionStorage.getItem('ultron_admin_session');
+    if (adminSession) {
+        try {
+            const session = JSON.parse(adminSession);
+            if (Date.now() >= session.expires) {
+                logoutAdmin();
+            }
+        } catch (e) {
+            logoutAdmin();
+        }
+    }
+}, 60000); // Vérifier toutes les minutes
 
 // Créer les particules d'arrière-plan
 function initializeParticles() {
@@ -151,11 +629,6 @@ async function handleFormSubmit(e) {
         acces_docs: formData.get('acces_docs') ? 1 : 0
     };
     
-    // Validation côté client
-    if (!validateFormData(userData)) {
-        return;
-    }
-    
     // État de chargement
     const submitBtn = document.querySelector('.submit-btn');
     const btnText = document.getElementById('btn-text');
@@ -163,7 +636,7 @@ async function handleFormSubmit(e) {
     
     submitBtn.disabled = true;
     spinner.style.display = 'inline-block';
-    btnText.textContent = 'Ajout en cours...';
+    btnText.textContent = 'Génération QR en cours...';
     
     try {
         const response = await fetch('http://localhost:5000/add_user', {
@@ -177,25 +650,148 @@ async function handleFormSubmit(e) {
         const result = await response.json();
         
         if (response.ok) {
-            showMessage(`✅ Survivant ajouté avec succès! Token QR: ${result.qr_token}`, 'success');
-            resetForm();
+            // Afficher le message de succès
+            showSuccessMessage('Survivant ajouté avec succès !');
             
-            // Si on est sur l'onglet liste, actualiser
+            // Afficher automatiquement le QR code
+            displayQRResult(result);
+            
+            // Réinitialiser le formulaire
+            document.getElementById('addUserForm').reset();
+            
+            // Actualiser la liste si on est sur l'onglet liste
             if (document.getElementById('list-section').classList.contains('active')) {
                 loadUserList();
             }
+            
         } else {
-            showMessage(`❌ Erreur: ${result.error || 'Impossible d\'ajouter le survivant'}`, 'error');
+            showErrorMessage(result.error || 'Erreur lors de l\'ajout');
         }
         
     } catch (error) {
-        console.error('Erreur réseau:', error);
-        showMessage('❌ Erreur de connexion au serveur', 'error');
+        console.error('Erreur:', error);
+        showErrorMessage('Erreur de connexion au serveur');
     } finally {
-        // Réinitialiser le bouton
+        // Remettre le bouton en état normal
         submitBtn.disabled = false;
         spinner.style.display = 'none';
         btnText.textContent = '🔐 Ajouter au Réseau';
+    }
+}
+
+// Nouvelle fonction pour afficher le résultat QR
+function displayQRResult(result) {
+    const qrSection = document.getElementById('qr-result');
+    
+    // Remplir les données utilisateur
+    document.getElementById('qr-nom').textContent = result.user_data.nom;
+    document.getElementById('qr-prenom').textContent = result.user_data.prenom;
+    document.getElementById('qr-niveau').textContent = result.user_data.niveau.toUpperCase();
+    document.getElementById('qr-token').textContent = result.qr_token;
+    
+    // Afficher le QR code
+    if (result.qr_base64) {
+        const canvas = document.getElementById('qr-canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+            canvas.width = 200;
+            canvas.height = 200;
+            ctx.drawImage(img, 0, 0, 200, 200);
+        };
+        
+        img.src = result.qr_base64;
+    }
+    
+    // Stocker les données pour les actions
+    window.currentQRData = result;
+    
+    // Afficher la section
+    qrSection.style.display = 'block';
+    qrSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Fonction pour télécharger le QR code
+function downloadQRCode() {
+    if (!window.currentQRData) return;
+    
+    const canvas = document.getElementById('qr-canvas');
+    const link = document.createElement('a');
+    
+    link.download = `QR_${window.currentQRData.user_data.nom}_${window.currentQRData.user_data.prenom}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    
+    showSuccessMessage('QR Code téléchargé !');
+}
+
+// Fonction pour imprimer le QR code
+function printQRCode() {
+    if (!window.currentQRData) return;
+    
+    const printWindow = window.open('', '_blank');
+    const canvas = document.getElementById('qr-canvas');
+    const dataURL = canvas.toDataURL();
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>QR Code - ${window.currentQRData.user_data.prenom} ${window.currentQRData.user_data.nom}</title>
+            <style>
+                body { text-align: center; font-family: Arial, sans-serif; margin: 50px; }
+                .qr-info { margin-bottom: 30px; }
+                .qr-info h2 { color: #333; }
+                .qr-info p { color: #666; margin: 5px 0; }
+                img { border: 2px solid #333; padding: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="qr-info">
+                <h2>ULTRON SURVIVORS - TOKEN QR</h2>
+                <p><strong>Nom:</strong> ${window.currentQRData.user_data.nom}</p>
+                <p><strong>Prénom:</strong> ${window.currentQRData.user_data.prenom}</p>
+                <p><strong>Niveau:</strong> ${window.currentQRData.user_data.niveau.toUpperCase()}</p>
+                <p><strong>Token:</strong> ${window.currentQRData.qr_token}</p>
+            </div>
+            <img src="${dataURL}" alt="QR Code">
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Fonction pour préparer l'ajout d'un nouveau survivant
+function resetForNewUser() {
+    const qrSection = document.getElementById('qr-result');
+    qrSection.style.display = 'none';
+    
+    document.getElementById('addUserForm').reset();
+    document.getElementById('nom').focus();
+    
+    window.currentQRData = null;
+}
+
+// Ajoutez aussi cette fonction pour régénérer tous les QR codes existants
+async function regenerateAllQRCodes() {
+    try {
+        const response = await fetch('http://localhost:5000/regenerate_all_qr', {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showSuccessMessage(`${result.count} QR codes régénérés avec succès !`);
+        } else {
+            showErrorMessage(result.error || 'Erreur lors de la régénération');
+        }
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        showErrorMessage('Erreur de connexion au serveur');
     }
 }
 
@@ -282,7 +878,8 @@ async function loadUserList() {
     }
 }
 
-// Afficher les utilisateurs
+// Remplacez la fonction displayUsers par :
+
 function displayUsers(users) {
     const userList = document.getElementById('userList');
     
@@ -295,40 +892,165 @@ function displayUsers(users) {
         return;
     }
     
-    const usersHTML = users.map(user => `
-        <div class="user-card">
-            <div class="user-header">
-                <div class="user-name">${user.prenom} ${user.nom}</div>
-                <div class="user-level level-${user.niveau.replace('-', '')}">${user.niveau}</div>
+    const usersHTML = users.map(user => {
+        // Nettoyer le niveau pour la classe CSS
+        const levelClass = user.niveau.toLowerCase().replace('-', '').replace('_', '');
+        
+        return `
+            <div class="user-card">
+                <div class="user-header">
+                    <div class="user-name">${user.prenom} ${user.nom}</div>
+                    <div class="user-level level-${levelClass}">${user.niveau.toUpperCase()}</div>
+                </div>
+                
+                <div class="user-info">
+                    <div class="info-item">
+                        <div class="info-label">Date de naissance</div>
+                        <div class="info-value">${formatDate(user.date_naissance)}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Localisation</div>
+                        <div class="info-value">${user.localisation}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Token QR</div>
+                        <div class="info-value" style="font-family: monospace; font-size: 0.8rem; word-break: break-all;">${user.qr_token}</div>
+                    </div>
+                </div>
+                
+                <div class="user-permissions">
+                    <div class="permission-badge ${user.acces_labo_DIP ? 'permission-yes' : 'permission-no'}">
+                        ${user.acces_labo_DIP ? '✅' : '❌'} Laboratoire DIP
+                    </div>
+                    <div class="permission-badge ${user.acces_docs ? 'permission-yes' : 'permission-no'}">
+                        ${user.acces_docs ? '✅' : '❌'} Documents Classifiés
+                    </div>
+                </div>
+                
+                <!-- Section QR Code -->
+                <div class="user-qr-section">
+                    <div class="user-qr-container">
+                        <canvas class="user-qr-canvas" id="qr-${user.id}" width="120" height="120"></canvas>
+                        <div class="qr-actions-mini">
+                            <button class="qr-btn-mini" onclick="downloadUserQR(${user.id}, '${user.nom}', '${user.prenom}')">
+                                💾 Télécharger
+                            </button>
+                            <button class="qr-btn-mini" onclick="printUserQR(${user.id}, '${user.nom}', '${user.prenom}', '${user.qr_token}')">
+                                🖨️ Imprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="user-info">
-                <div class="info-item">
-                    <div class="info-label">Date de naissance</div>
-                    <div class="info-value">${formatDate(user.date_naissance)}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Localisation</div>
-                    <div class="info-value">${user.localisation}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Token QR</div>
-                    <div class="info-value" style="font-family: monospace; font-size: 0.9rem;">${user.qr_token}</div>
-                </div>
-            </div>
-            
-            <div class="user-permissions">
-                <div class="permission-badge ${user.acces_labo_DIP ? 'permission-yes' : 'permission-no'}">
-                    ${user.acces_labo_DIP ? '✅' : '❌'} Laboratoire DIP
-                </div>
-                <div class="permission-badge ${user.acces_docs ? 'permission-yes' : 'permission-no'}">
-                    ${user.acces_docs ? '✅' : '❌'} Documents
-                </div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
     
     userList.innerHTML = usersHTML;
+    
+    // Générer les QR codes après l'affichage
+    setTimeout(() => {
+        users.forEach(user => {
+            generateUserQRCode(user.qr_token, user.id);
+        });
+    }, 100);
+}
+
+// Nouvelle fonction pour générer un QR code pour un utilisateur spécifique
+function generateUserQRCode(token, userId) {
+    try {
+        const canvas = document.getElementById(`qr-${userId}`);
+        if (!canvas) {
+            console.error(`Canvas qr-${userId} not found`);
+            return;
+        }
+        
+        // Utilisez une bibliothèque QR simple en JavaScript
+        // Vous pouvez utiliser qrcode.js ou une alternative
+        
+        // Solution temporaire avec un placeholder
+        const ctx = canvas.getContext('2d');
+        
+        // Créer une requête vers le serveur pour obtenir le QR en base64
+        fetch('http://localhost:5000/generate_qr', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: token })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.qr_base64) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = data.qr_base64;
+            }
+        })
+        .catch(error => {
+            console.error('Erreur génération QR:', error);
+            // Afficher un placeholder en cas d'erreur
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('QR Error', canvas.width/2, canvas.height/2);
+        });
+        
+    } catch (error) {
+        console.error('Erreur QR code:', error);
+    }
+}
+
+// Fonctions pour télécharger et imprimer les QR codes individuels
+function downloadUserQR(userId, nom, prenom) {
+    const canvas = document.getElementById(`qr-${userId}`);
+    if (!canvas) return;
+    
+    const link = document.createElement('a');
+    link.download = `QR_${nom}_${prenom}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    
+    showSuccessMessage(`QR Code de ${prenom} ${nom} téléchargé !`);
+}
+
+function printUserQR(userId, nom, prenom, token) {
+    const canvas = document.getElementById(`qr-${userId}`);
+    if (!canvas) return;
+    
+    const printWindow = window.open('', '_blank');
+    const dataURL = canvas.toDataURL();
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>QR Code - ${prenom} ${nom}</title>
+            <style>
+                body { text-align: center; font-family: Arial, sans-serif; margin: 50px; }
+                .qr-info { margin-bottom: 30px; }
+                .qr-info h2 { color: #333; }
+                .qr-info p { color: #666; margin: 5px 0; }
+                img { border: 2px solid #333; padding: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="qr-info">
+                <h2>ULTRON SURVIVORS - TOKEN QR</h2>
+                <p><strong>Nom:</strong> ${nom}</p>
+                <p><strong>Prénom:</strong> ${prenom}</p>
+                <p><strong>Token:</strong> ${token}</p>
+            </div>
+            <img src="${dataURL}" alt="QR Code">
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
 }
 
 // Filtrer les utilisateurs

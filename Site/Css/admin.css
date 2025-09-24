@@ -678,11 +678,34 @@ body {
     text-transform: uppercase;
 }
 
-.level-public { background: rgba(33, 150, 243, 0.2); color: #64B5F6; }
-.level-restreint { background: rgba(255, 193, 7, 0.2); color: #FFD54F; }
-.level-confidentiel { background: rgba(255, 152, 0, 0.2); color: #FFB74D; }
-.level-secret { background: rgba(244, 67, 54, 0.2); color: #E57373; }
-.level-ultra-secret { background: rgba(156, 39, 176, 0.2); color: #BA68C8; }
+.level-public { 
+    background: rgba(33, 150, 243, 0.2); 
+    color: #64B5F6; 
+}
+
+.level-restreint { 
+    background: rgba(255, 193, 7, 0.2); 
+    color: #FFD54F; 
+}
+
+.level-confidentiel { 
+    background: rgba(255, 152, 0, 0.2); 
+    color: #FFB74D; 
+}
+
+.level-secret { 
+    background: rgba(244, 67, 54, 0.25); 
+    color: #FF5722; 
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.level-ultrasecret { 
+    background: rgba(156, 39, 176, 0.25); 
+    color: #E91E63; 
+    border: 1px solid rgba(156, 39, 176, 0.3);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(156, 39, 176, 0.5);
+}
 
 .user-info {
     display: grid;
@@ -733,6 +756,85 @@ body {
 .permission-no {
     background: rgba(255, 71, 87, 0.2);
     color: var(--danger-color);
+}
+
+/* QR Code dans les cartes utilisateur */
+.user-qr-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(13, 17, 23, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(79, 172, 254, 0.2);
+    text-align: center;
+}
+
+.user-qr-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-qr-canvas {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 8px;
+    padding: 5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.qr-actions-mini {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.qr-btn-mini {
+    padding: 8px 12px;
+    background: rgba(79, 172, 254, 0.1);
+    border: 1px solid rgba(79, 172, 254, 0.3);
+    border-radius: 6px;
+    color: #4facfe;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.qr-btn-mini:hover {
+    background: rgba(79, 172, 254, 0.2);
+    border-color: rgba(79, 172, 254, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+}
+
+.qr-loading {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Animation de chargement pour QR */
+.qr-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(79, 172, 254, 0.3);
+    border-radius: 50%;
+    border-top-color: #4facfe;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 5px;
 }
 
 /* Messages */
@@ -897,5 +999,59 @@ body {
     .tab {
         padding: 12px 15px;
         font-size: 1rem;
+    }
+}
+
+/* Animations pour les alertes de session */
+@keyframes sessionWarning {
+    0% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    100% { 
+        opacity: 0.5; 
+        transform: scale(1.05);
+    }
+}
+
+@keyframes sessionExpiredPulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 40px rgba(255, 71, 87, 0.6);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes redirectProgress {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+/* Style pour l'info de session */
+.session-time {
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255, 165, 2, 0.1);
+    border: 1px solid rgba(255, 165, 2, 0.3);
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem !important;
+}
+
+/* Amélioration de l'info utilisateur */
+.current-user-info {
+    animation: userInfoSlideIn 0.8s ease-out;
+}
+
+@keyframes userInfoSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

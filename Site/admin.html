@@ -129,6 +129,60 @@
                                 </button>
                             </div>
                         </form>
+
+                        <!-- Section QR Code Result -->
+                        <div id="qr-result" class="qr-result-section" style="display: none;">
+                            <div class="qr-header">
+                                <h3 class="qr-title">🎯 Survivant Enregistré avec Succès</h3>
+                                <p class="qr-subtitle">Token QR généré et prêt à l'emploi</p>
+                            </div>
+                            
+                            <div class="qr-content">
+                                <div class="qr-info">
+                                    <div class="survivor-info">
+                                        <div class="info-row">
+                                            <span class="info-label">Nom :</span>
+                                            <span class="info-value" id="qr-nom"></span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Prénom :</span>
+                                            <span class="info-value" id="qr-prenom"></span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Niveau :</span>
+                                            <span class="info-value" id="qr-niveau"></span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Token :</span>
+                                            <span class="info-value token-display" id="qr-token"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="qr-display">
+                                    <div class="qr-container">
+                                        <canvas id="qr-canvas" class="qr-canvas"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="qr-actions">
+                                <button class="download-btn" onclick="downloadQRCode()">
+                                    <span class="btn-icon">💾</span>
+                                    Télécharger QR Code
+                                </button>
+                                
+                                <button class="print-btn" onclick="printQRCode()">
+                                    <span class="btn-icon">🖨️</span>
+                                    Imprimer
+                                </button>
+                                
+                                <button class="new-btn" onclick="resetForNewUser()">
+                                    <span class="btn-icon">➕</span>
+                                    Nouveau Survivant
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="list-section" class="tab-content">

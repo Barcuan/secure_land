@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin - Ultron Survivors</title>
+    <link rel="stylesheet" href="Css/login.css">
+</head>
+<body>
+    <div class="particles"></div>
+    
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">⚡</div>
+                ULTRON SURVIVORS
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">Accueil</a></li>
+                <li><a href="verif.html" class="nav-link">Scanner QR</a></li>
+                <li><a href="#" class="nav-link admin-link">Administration</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section class="login-section">
+            <div class="container">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <div class="logo-circle">
+                            <svg viewBox="0 0 24 24" class="logo-icon">
+                                <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H16.2V16H7.8V11H9.2V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.4,8.7 10.4,10V11H13.6V10C13.6,8.7 12.8,8.2 12,8.2Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="login-content">
+                        <h1 class="login-title">ACCÈS ADMINISTRATEUR</h1>
+                        <p class="login-subtitle">Zone Ultra-Sécurisée - Accréditation Requise</p>
+                        <div class="login-description">
+                            <p>🔐 Seuls les agents avec accréditation <strong>ULTRA-SECRET</strong> peuvent accéder au panneau d'administration.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="login-interface">
+                    <div class="login-tabs">
+                        <button class="tab active" onclick="switchAuthMethod('qr')">
+                            <span class="tab-icon">📱</span>
+                            Authentification QR
+                        </button>
+                        <button class="tab" onclick="switchAuthMethod('token')">
+                            <span class="tab-icon">🔑</span>
+                            Token Manuel
+                        </button>
+                    </div>
+
+                    <!-- Authentification par QR -->
+                    <div id="qr-auth" class="auth-content active">
+                        <div class="auth-description">
+                            <p>Scannez votre QR code ultra-secret pour vous authentifier.</p>
+                        </div>
+                        
+                        <div class="camera-container">
+                            <div class="camera-placeholder" id="camera-placeholder">
+                                Caméra non active
+                            </div>
+                            <video id="video" style="display: none;" autoplay playsinline></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                            <div class="scanner-overlay">
+                                <div class="scan-frame">
+                                    <div class="scan-corners"></div>
+                                    <div class="scan-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="scanner-controls">
+                            <button id="startBtn" class="control-btn primary" onclick="startScanner()">
+                                <span class="btn-icon">📹</span>
+                                Démarrer la Caméra
+                            </button>
+                            <button id="stopBtn" class="control-btn secondary" onclick="stopScanner()" disabled>
+                                <span class="btn-icon">⏹️</span>
+                                Arrêter
+                            </button>
+                        </div>
+                        
+                        <div id="scanner-status" class="status-display" style="display: none;"></div>
+                    </div>
+
+                    <!-- Authentification par token -->
+                    <div id="token-auth" class="auth-content">
+                        <div class="auth-description">
+                            <p>Entrez votre token d'accès Ultra-Secret pour vous authentifier.</p>
+                        </div>
+                        
+                        <div class="input-section">
+                            <div class="input-container">
+                                <input type="text" id="admin_token" placeholder="Token d'accès Ultra-Secret..." autocomplete="off">
+                                <div class="input-glow"></div>
+                            </div>
+                            
+                            <button class="auth-btn" onclick="authenticateWithToken()">
+                                <div class="spinner" id="token-spinner" style="display: none;"></div>
+                                <span id="token-btn-text">🔓 S'authentifier</span>
+                                <div class="btn-shimmer"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Résultat de l'authentification -->
+                <div id="auth-result" class="result-container" style="display: none;"></div>
+
+                <div class="back-navigation">
+                    <a href="index.html" class="back-btn">
+                        <span class="back-icon">←</span>
+                        Retour au Centre de Contrôle
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="Script/login.js"></script>
+</body>
+</html>
