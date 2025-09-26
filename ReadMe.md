@@ -19,7 +19,7 @@ Ce projet propose un **système complet** permettant de :
 
 ## 🚀 Fonctionnalités principales  
 
-✔️ Ajout, modification et suppression de survivants  
+✔️ Ajout de survivants  
 ✔️ Génération automatique de QR codes uniques  
 ✔️ Contrôle d’accès par scan de QR code  
 ✔️ Gestion des niveaux d’accréditation :  
@@ -27,28 +27,22 @@ Ce projet propose un **système complet** permettant de :
    - RESTREINT
    - CONFIDENTIEL  
    - SECRET  
-   - ULTRA-SECRET  
+   - ULTRA-SECRET
+
 ✔️ Administration sécurisée réservée aux ULTRA-SECRET  
-✔️ Statistiques, export CSV, sauvegarde des bases  
-✔️ Interface moderne avec animations & easter eggs 🎉  
+✔️ Interface moderne et intuitive
 
 ---
 
 ## 🏗️ Architecture du projet  
 
+```
 Ultron-Survivors/
 ├── Site/ → Frontend (HTML, CSS, JS)
 ├── Python/ → Backend Flask (API)
 ├── Bases/ → Bases de données SQLite
 └── qrcodes/ → QR codes générés automatiquement
-
-markdown
-Copier le code
-
-- **Frontend** : HTML, CSS, JavaScript  
-- **Backend** : Python (Flask + Flask-CORS)  
-- **Base de données** : SQLite  
-- **QR codes** : Générés en PNG avec `qrcode[pil]`  
+```
 
 ---
 
@@ -59,23 +53,16 @@ Copier le code
 ```bash
 pip install flask flask-cors qrcode[pil]
 ```
-2️⃣ Lancer le serveur
+
+### 2️⃣ Lancer le serveur
+
 ```bash
 cd Python
 python app.py
 ```
-3️⃣ Ouvrir le site
+### 3️⃣ Ouvrir le site
 
 Accéder à Site/index.html dans votre navigateur 🌐
 
 ---
 
-
-👨‍💻 Auteurs
-
-Nom	Rôle
-Sacha BONNEL
-Maxime ADOLPHE	
-Killian HENRIET	
-
-```
