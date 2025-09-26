@@ -178,7 +178,7 @@ def add_user():
         
         # Ajouter les accréditations
         conn_accred = sqlite3.connect(r'C:\All\Taff\Git\secure_land\Bases\accred.db')
-        c_accred = c_accred.cursor()
+        c_accred = conn_accred.cursor()
         
         c_accred.execute('''
             INSERT INTO accreditations (population_id, niveau, acces_labo_DIP, acces_docs) 
