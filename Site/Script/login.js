@@ -454,3 +454,35 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
         }
     };
 }
+
+/**
+ * login.js - Gestion de l'authentification administrateur
+ * 
+ * Fonctionnalités principales :
+ * - Scanner QR Code via la caméra pour authentification rapide et sécurisée.
+ * - Authentification manuelle par saisie d'un token.
+ * - Gestion de session administrateur limitée à 2h, avec déconnexion automatique.
+ * - Effets visuels de particules pour l'ambiance "ultra-secret".
+ * - Feedback utilisateur avec messages et animations pour succès ou échec.
+ * - Mode debug activable sur localhost pour tests simplifiés.
+ * 
+ * Fonctionnement du scanner QR :
+ * - Demande d'accès à la caméra, affichage du flux vidéo.
+ * - Analyse continue des images grâce à jsQR pour détecter un QR code.
+ * - Dès détection, arrêt de la caméra et envoi du token à l'API Flask pour vérification.
+ * - En cas de validation, création d'une session sécurisée et redirection vers la page admin.
+ * 
+ * Authentification manuelle :
+ * - Entrée d'un token dans un champ texte.
+ * - Envoi à l'API pour validation.
+ * - Gestion visuelle des messages d'erreur et de succès.
+ * 
+ * Gestion des sessions :
+ * - La session est enregistrée en sessionStorage avec une durée d'expiration.
+ * - Vérification automatique à l'ouverture de page pour maintenir ou invalider la session.
+ * - Déconnexion automatique après expiration ou inactivité.
+ * 
+ * Sécurité et UX :
+ * - Contrôle des accès caméra et gestion des erreurs.
+ * - Interface utilisateur claire et moderne avec contrôle manuel du scanner.
+ */

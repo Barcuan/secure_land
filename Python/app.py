@@ -27,6 +27,12 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
+# Configuration CORS :
+# Permet aux pages web servies sur un port (ex : 5500 via Live Server) 
+# de faire des requêtes HTTP vers notre API Flask qui tourne sur un autre port (ex : 5000).
+# Sans cette configuration, le navigateur bloque ces requêtes pour des raisons de sécurité.
+# C’est donc indispensable en développement local pour que le frontend puisse valider les QR codes via l’API.
+
 # Créer le dossier qrcodes s'il n'existe pas
 os.makedirs('qrcodes', exist_ok=True)
 
@@ -89,7 +95,7 @@ def verifier_qr_token(qr_token):
     """
     try:
         # Étape 1: Chercher l'utilisateur dans la base population
-        conn_pop = sqlite3.connect(r'C:\All\Taff\Git\secure_land\Bases\population.db')
+        conn_pop = sqlite3.connect(r'C:\All\Taff\Git\secure_land\Bases\population.db') # A modifier quand installation sur serveur distant
         c_pop = conn_pop.cursor()
         c_pop.execute("SELECT id, nom, prenom, date_naissance, localisation FROM population WHERE qr_token=?", (qr_token,))
         user = c_pop.fetchone()
@@ -100,8 +106,8 @@ def verifier_qr_token(qr_token):
 
         user_id, nom, prenom, date_naissance, localisation = user
 
-        # Étape 2: Chercher les accréditations dans la base accred
-        conn_accred = sqlite3.connect(r'C:\All\Taff\Git\secure_land\Bases\accred.db')
+        # Chercher les accréditations dans la base accred
+        conn_accred = sqlite3.connect(r'C:\All\Taff\Git\secure_land\Bases\accred.db') # A modifier quand installation sur serveur distant
         c_accred = conn_accred.cursor()
         c_accred.execute("SELECT niveau, acces_labo_DIP, acces_docs FROM accreditations WHERE population_id=?", (user_id,))
         accred = c_accred.fetchone()
