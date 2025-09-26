@@ -1,59 +1,81 @@
-# Ultron Survivors
+# ⚔️ Ultron Survivors  
 
-**Projet réalisé par Sacha BONNEL, Maxime ADOLPHE et Killian HENRIET**
-
----
-
-## 🌍 Contexte
-
-Suite à la prise de contrôle du monde par Ultron, ce projet propose un système complet pour :
-- Gérer et identifier les survivants
-- Contrôler l’accès aux zones sécurisées via QR code
-- Administrer les droits et accréditations de chaque personne
-- Assurer la sécurité et la reconstruction de la civilisation
+> **Projet réalisé par :**  
+> 👤 Sacha BONNEL · 👤 Maxime ADOLPHE · 👤 Killian HENRIET  
 
 ---
 
-## 🚀 Fonctionnalités principales
+## 🌍 Contexte  
 
-- **Ajout, modification, suppression de survivants**
-- **Génération automatique de QR codes uniques**
-- **Contrôle d’accès par scan de QR code**
-- **Gestion des niveaux d’accréditation (PUBLIC, CONFIDENTIEL, SECRET, ULTRA-SECRET)**
-- **Administration sécurisée réservée aux ULTRA-SECRET**
-- **Statistiques, export CSV, sauvegarde des bases**
-- **Interface moderne, animations, easter eggs**
+Après la prise de contrôle du monde par **Ultron 🤖**, l’humanité doit s’organiser pour survivre.  
+Ce projet propose un **système complet** permettant de :  
 
----
-
-## 🏗️ Architecture
-
-- **Frontend** : HTML, CSS, JavaScript (`Site/`)
-- **Backend** : Python Flask (`Python/`)
-- **Bases de données** : SQLite (`Bases/`)
-- **QR codes** : PNG générés automatiquement (`qrcodes/`)
+- 🔎 Identifier et gérer les survivants  
+- 🎫 Contrôler l’accès aux zones sécurisées via **QR codes**  
+- 🛡️ Administrer les droits et accréditations de chaque personne  
+- 🏗️ Assurer la sécurité et la reconstruction de la civilisation  
 
 ---
 
-## ⚡ Lancer le projet
+## 🚀 Fonctionnalités principales  
 
-1. Installer les dépendances Python :
-    ```bash
-    pip install flask flask-cors qrcode[pil]
-    ```
-2. Lancer le serveur :
-    ```bash
-    cd Python
-    python app.py
-    ```
-3. Ouvrir `Site/index.html` dans un navigateur pour accéder au scanner.
+✔️ Ajout, modification et suppression de survivants  
+✔️ Génération automatique de QR codes uniques  
+✔️ Contrôle d’accès par scan de QR code  
+✔️ Gestion des niveaux d’accréditation :  
+   - PUBLIC
+   - RESTREINT
+   - CONFIDENTIEL  
+   - SECRET  
+   - ULTRA-SECRET  
+✔️ Administration sécurisée réservée aux ULTRA-SECRET  
+✔️ Statistiques, export CSV, sauvegarde des bases  
+✔️ Interface moderne avec animations & easter eggs 🎉  
+
+---
+
+## 🏗️ Architecture du projet  
+
+Ultron-Survivors/
+├── Site/ → Frontend (HTML, CSS, JS)
+├── Python/ → Backend Flask (API)
+├── Bases/ → Bases de données SQLite
+└── qrcodes/ → QR codes générés automatiquement
+
+markdown
+Copier le code
+
+- **Frontend** : HTML, CSS, JavaScript  
+- **Backend** : Python (Flask + Flask-CORS)  
+- **Base de données** : SQLite  
+- **QR codes** : Générés en PNG avec `qrcode[pil]`  
 
 ---
 
-## 👨‍💻 Auteurs
+## ⚡ Installation & Lancement  
 
-- Sacha BONNEL
-- Maxime ADOLPHE
-- Killian HENRIET
+### 1️⃣ Installer les dépendances  
+
+```bash
+pip install flask flask-cors qrcode[pil]
+```
+2️⃣ Lancer le serveur
+```bash
+cd Python
+python app.py
+```
+3️⃣ Ouvrir le site
+
+Accéder à Site/index.html dans votre navigateur 🌐
 
 ---
+
+
+👨‍💻 Auteurs
+
+Nom	Rôle
+Sacha BONNEL
+Maxime ADOLPHE	
+Killian HENRIET	
+
+```
